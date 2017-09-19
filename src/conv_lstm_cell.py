@@ -1,15 +1,16 @@
 import tensorflow as tf
 
+
 class ConvLSTMCell(tf.nn.rnn_cell.RNNCell):
-    def __init__(self, shape, num_filters, filter):
+    def __init__(self, shape, num_filters, filter_size):
         """
         :param shape: (list) spatial dimensions [H, W]
         :param num_filters: (int) number of output feature maps
-        :param filter: (list) dims of filter [F, F]
+        :param filter_size: (list) dims of filter [F, F]
         """
         self.shape = shape
         self.num_filters = num_filters
-        self.filter = filter
+        self.filter_size = filter_size
         self.size = tf.TensorShape(shape + [self.num_filters])
         self.feature_axis = self.size.ndims
 
@@ -25,9 +26,9 @@ class ConvLSTMCell(tf.nn.rnn_cell.RNNCell):
         x = tf.concat([x, h], axis=self.feature_axis)
         n = x.shape[-1]
         m = 4 * self.num_filters if self.num_filters > 1 else 4
-        W = tf.get_variable('filter', self.filter + [n, m])
-        y = tf.nn.convolution(x, W, 'SAME')
-        y += tf.get_variable('bias', [m], initializer=tf.zeros_initializer())
+        W = tf.get_variable("filter", self.filter_size + [n, m])
+        y = tf.nn.convolution(x, W, padding="SAME")
+        y += tf.get_variable("bias", [m], initializer=tf.zeros_initializer())
         j, i, f, o = tf.split(y, 4, axis=self.feature_axis)
 
         f = tf.sigmoid(f)
@@ -40,6 +41,3 @@ class ConvLSTMCell(tf.nn.rnn_cell.RNNCell):
         state = tf.nn.rnn_cell.LSTMStateTuple(c, h)
 
         return h, state
-
-
-
