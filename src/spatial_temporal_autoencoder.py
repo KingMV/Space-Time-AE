@@ -12,7 +12,6 @@ HEIGHT = 227
 TVOL = 10
 NUM_RNN_LAYERS = 3
 
-
 class SpatialTemporalAutoencoder(object):
     def __init__(self, alpha, batch_size):
         self.x_ = tf.placeholder(tf.float32, [None, TVOL, HEIGHT, WIDTH, NCHANNELS])
@@ -36,6 +35,8 @@ class SpatialTemporalAutoencoder(object):
         self.convLSTMed = self.temporal_encoder_decoder(self.conved)
         self.y = self.spatial_decoder(self.convLSTMed)
         self.y = tf.reshape(self.y, shape=[-1, TVOL, HEIGHT, WIDTH, NCHANNELS])
+
+        self.per_frame_recon_errors = tf.reduce_mean(tf.pow(self.y_ - self.y, 2), axis=[2, 3, 4])
 
         self.reconstruction_loss = tf.reduce_mean(tf.pow(self.y_ - self.y, 2))
         self.regularization_loss = tf.constant(0)
@@ -129,3 +130,6 @@ class SpatialTemporalAutoencoder(object):
 
     def step(self, x):
         self.sess.run(self.optimizer, feed_dict={self.x_: x, self.y_: x})
+
+    def get_recon_errors(self, x):
+        return self.per_frame_recon_errors.eval(feed_dict={self.x_: x, self.y_: x}, session=self.sess)
