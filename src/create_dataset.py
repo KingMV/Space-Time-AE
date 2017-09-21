@@ -16,6 +16,7 @@ test = [resize(np.array(Image.open(y)), (227, 227)) for x in os.walk(test_dir) f
 # rescale to [0, 1]
 train, test = [x / 255. for x in train], [x / 255. for x in test]
 train, test = np.asarray(train), np.asarray(test)
+train, test = train.reshape((train.shape + (1, ))),  test.reshape((test.shape + (1, )))
 
 # centering
 tr_mu, tr_sigma = np.mean(train, axis=0), np.std(train, axis=0)

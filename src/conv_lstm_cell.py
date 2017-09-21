@@ -8,6 +8,7 @@ class ConvLSTMCell(tf.nn.rnn_cell.RNNCell):
         :param num_filters: (int) number of output feature maps
         :param filter_size: (list) dims of filter [F, F]
         """
+        super(ConvLSTMCell, self).__init__()
         self.shape = shape
         self.num_filters = num_filters
         self.filter_size = filter_size
@@ -41,3 +42,11 @@ class ConvLSTMCell(tf.nn.rnn_cell.RNNCell):
         state = tf.nn.rnn_cell.LSTMStateTuple(c, h)
 
         return h, state
+
+    @property
+    def state_size(self):
+        return tf.nn.rnn_cell.LSTMStateTuple(self.size, self.size)
+
+    @property
+    def output_size(self):
+        return self.size

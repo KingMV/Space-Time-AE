@@ -13,6 +13,7 @@ HEIGHT = 227
 TVOL = 10
 NUM_RNN_LAYERS = 3
 
+
 class SpatialTemporalAutoencoder(object):
     def __init__(self, alpha, batch_size):
         self.x_ = tf.placeholder(tf.float32, [None, TVOL, HEIGHT, WIDTH, NCHANNELS])
@@ -26,9 +27,9 @@ class SpatialTemporalAutoencoder(object):
             "c_b1": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[CONV1])),
             "c_w2": tf.get_variable("c_w2", shape=[5, 5, CONV1, CONV2], initializer=W_init),
             "c_b2": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[CONV2])),
-            "c_w3": tf.get_variable("c_w3", shape=[5, 5, CONV2, DECONV1], initializer=W_init),
+            "c_w3": tf.get_variable("c_w3", shape=[5, 5, DECONV1, CONV2], initializer=W_init),
             "c_b3": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[DECONV1])),
-            "c_w4": tf.get_variable("c_w4", shape=[11, 11, DECONV1, DECONV2], initializer=W_init),
+            "c_w4": tf.get_variable("c_w4", shape=[11, 11, DECONV2, DECONV1], initializer=W_init),
             "c_b4": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[DECONV2]))
         }
 
@@ -40,7 +41,7 @@ class SpatialTemporalAutoencoder(object):
         self.per_frame_recon_errors = tf.reduce_mean(tf.pow(self.y_ - self.y, 2), axis=[2, 3, 4])
 
         self.reconstruction_loss = tf.reduce_mean(tf.pow(self.y_ - self.y, 2))
-        self.regularization_loss = tf.constant(0)
+        self.regularization_loss = tf.constant(0.0, tf.float32)
         self.loss = self.reconstruction_loss + self.regularization_loss
         self.optimizer = tf.train.AdamOptimizer(alpha).minimize(self.loss)
 
@@ -76,7 +77,7 @@ class SpatialTemporalAutoencoder(object):
         :param strides: the stride when filter is scanning
         :return: a deconvolutional layer representation
         """
-        x = tf.nn.conv2d_transpose(x, w, output_shape=out_shape, strides=[1, strides, strides, 1], padding='SAME')
+        x = tf.nn.conv2d_transpose(x, w, output_shape=out_shape, strides=[1, strides, strides, 1], padding='VALID')
         x = tf.nn.bias_add(x, b)
         return activation(x)
 
@@ -91,22 +92,6 @@ class SpatialTemporalAutoencoder(object):
         conv1 = self.conv2d(x, self.params['c_w1'], self.params['c_b1'], activation=tf.nn.tanh, strides=4)
         conv2 = self.conv2d(conv1, self.params['c_w2'], self.params['c_b2'], activation=tf.nn.tanh, strides=2)
         return conv2
-
-    def spatial_decoder(self, x):
-        """
-        Build a spatial decoder that performs deconvolutions on the input
-        :param x: tensor of some transformed representation of input of shape (batch_size, TVOL, h, w, c)
-        :return: deconvolved representation of shape (batch_size * TVOL, HEIGHT, WEIGHT, NCHANNELS)
-        """
-        h, w, c = x.get_shape().as_list()[2:]
-        x = tf.reshape(x, shape=[-1, h, w, c])
-        deconv1 = self.deconv2d(x, self.params['c_w3'], self.params['c_b3'],
-                                [self.batch_size * TVOL, self.params['c_w3'].shape[3], 55, 55],
-                                activation=tf.nn.tanh, strides=2)
-        deconv2 = self.deconv2d(deconv1, self.params['c_w4'], self.params['c_b4'],
-                                [self.batch_size * TVOL, self.params['c_w4'].shape[3], HEIGHT, WIDTH],
-                                activation=tf.nn.tanh, strides=4)
-        return deconv2
 
     def temporal_encoder_decoder(self, x):
         """
@@ -125,6 +110,22 @@ class SpatialTemporalAutoencoder(object):
         states_series, _ = tf.nn.static_rnn(cell, x, dtype=tf.float32)
         output = tf.transpose(tf.stack(states_series, axis=0), [1, 0, 2, 3, 4])
         return output
+
+    def spatial_decoder(self, x):
+        """
+        Build a spatial decoder that performs deconvolutions on the input
+        :param x: tensor of some transformed representation of input of shape (batch_size, TVOL, h, w, c)
+        :return: deconvolved representation of shape (batch_size * TVOL, HEIGHT, WEIGHT, NCHANNELS)
+        """
+        h, w, c = x.get_shape().as_list()[2:]
+        x = tf.reshape(x, shape=[-1, h, w, c])
+        deconv1 = self.deconv2d(x, self.params['c_w3'], self.params['c_b3'],
+                                [self.batch_size * TVOL, 55, 55, DECONV1],
+                                activation=tf.nn.tanh, strides=2)
+        deconv2 = self.deconv2d(deconv1, self.params['c_w4'], self.params['c_b4'],
+                                [self.batch_size * TVOL, HEIGHT, WIDTH, DECONV2],
+                                activation=tf.nn.tanh, strides=4)
+        return deconv2
 
     def get_loss(self, x):
         return self.loss.eval(feed_dict={self.x_: x, self.y_: x}, session=self.sess)
