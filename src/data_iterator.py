@@ -5,12 +5,17 @@ TVOL = 10
 
 
 class DataIterator(object):
-    def __init__(self, p_train, p_test, p_labels):
+    def __init__(self, p_train, p_test, p_labels, batch_size, stride=10):
         self.train, self.test, self.labels = np.load(p_train), np.load(p_test), np.load(p_labels)
+        self._index = 0
+        if stride > TVOL:
+            raise ValueError('The stride can not be greater than temporal volume!')
+        self._stride = stride
+        self.batch_size = batch_size
 
-    def get_train_batch(self, batch_size):
-        batch = np.zeros(shape=(batch_size, TVOL) + self.train[0].shape)
-        for i in xrange(batch_size):
+    def get_train_batch(self):
+        batch = np.zeros(shape=(self.batch_size, TVOL) + self.train[0].shape)
+        for i in xrange(self.batch_size):
             vid_idx = np.random.randint(0, self.train.shape[0] / FRAMES_PER_VIDEO)
             aug_idx = np.random.randint(1, 4)
             frame_idx = np.random.randint(0, FRAMES_PER_VIDEO - TVOL * aug_idx)
@@ -18,18 +23,28 @@ class DataIterator(object):
                                   (FRAMES_PER_VIDEO * vid_idx + frame_idx + TVOL * aug_idx):aug_idx]
         return batch
 
-    def get_test_batch(self, batch_size):
-        batch = np.zeros(shape=(batch_size, TVOL) + self.test[0].shape)
-        for i in xrange(batch_size):
-            vid_idx = np.random.randint(0, self.train.shape[0] / FRAMES_PER_VIDEO)
-            aug_idx = np.random.randint(1, 4)
-            frame_idx = np.random.randint(0, FRAMES_PER_VIDEO - TVOL * aug_idx)
-            batch[i] = self.train[(FRAMES_PER_VIDEO * vid_idx + frame_idx):
-                                  (FRAMES_PER_VIDEO * vid_idx + frame_idx + TVOL * aug_idx):aug_idx]
-        return self.test, self.labels
+    def get_test_batch(self):
+        batch = np.zeros(shape=(self.batch_size, TVOL) + self.test[0].shape)
+        frame_indices = np.full(shape=(self.batch_size, TVOL), fill_value=-1, dtype=np.int)
+
+        for i in xrange(self.batch_size):
+            if not self.check_data_exhausted():
+                if self._index % FRAMES_PER_VIDEO + TVOL > FRAMES_PER_VIDEO:
+                    self._index = (self._index/FRAMES_PER_VIDEO + 1) * FRAMES_PER_VIDEO
+                batch[i] = self.train[self._index:self._index + TVOL]
+                frame_indices[i] = np.arange(self._index, self._index + TVOL)
+                self._index += self.stride
+            else:
+                break
+        return batch, frame_indices
 
     def get_train_size(self):
         return self.train.shape[0]
 
     def get_test_size(self):
         return self.test.shape[0]
+
+    def check_data_exhausted(self):
+        return self._index + TVOL > self.test.shape[0]
+
+
