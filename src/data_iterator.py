@@ -28,10 +28,8 @@ class DataIterator(object):
                                   (FRAMES_PER_VIDEO * vid_idx + frame_idx + TVOL * aug_idx):aug_idx]
         return self.test, self.labels
 
-    @property
     def get_train_size(self):
         return self.train.shape[0]
 
-    @property
     def get_test_size(self):
         return self.test.shape[0]

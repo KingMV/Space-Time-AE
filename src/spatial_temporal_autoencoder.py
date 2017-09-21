@@ -1,5 +1,6 @@
 import tensorflow as tf
 from conv_lstm_cell import ConvLSTMCell
+import numpy as np
 
 # network architecture definition
 NCHANNELS = 1
@@ -21,13 +22,13 @@ class SpatialTemporalAutoencoder(object):
         self.batch_size = batch_size
         W_init = tf.contrib.layers.xavier_initializer_conv2d()
         self.params = {
-            "c_w1": tf.get_variable(shape=[11, 11, NCHANNELS, CONV1], initializer=W_init),
+            "c_w1": tf.get_variable("c_w1", shape=[11, 11, NCHANNELS, CONV1], initializer=W_init),
             "c_b1": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[CONV1])),
-            "c_w2": tf.get_variable(shape=[5, 5, CONV1, CONV2], initializer=W_init),
+            "c_w2": tf.get_variable("c_w2", shape=[5, 5, CONV1, CONV2], initializer=W_init),
             "c_b2": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[CONV2])),
-            "c_w3": tf.get_variable(shape=[5, 5, CONV2, DECONV1], initializer=W_init),
+            "c_w3": tf.get_variable("c_w3", shape=[5, 5, CONV2, DECONV1], initializer=W_init),
             "c_b3": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[DECONV1])),
-            "c_w4": tf.get_variable(shape=[11, 11, DECONV1, DECONV2], initializer=W_init),
+            "c_w4": tf.get_variable("c_w4", shape=[11, 11, DECONV1, DECONV2], initializer=W_init),
             "c_b4": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[DECONV2]))
         }
 
@@ -85,7 +86,7 @@ class SpatialTemporalAutoencoder(object):
         :param x: tensor of input image of shape (batch_size, TVOL, HEIGHT, WIDTH, NCHANNELS)
         :return: convolved representation of shape (batch_size * TVOL, h, w, c)
         """
-        h, w, c = x.shape[2:]
+        h, w, c = x.get_shape().as_list()[2:]
         x = tf.reshape(x, shape=[-1, h, w, c])
         conv1 = self.conv2d(x, self.params['c_w1'], self.params['c_b1'], activation=tf.nn.tanh, strides=4)
         conv2 = self.conv2d(conv1, self.params['c_w2'], self.params['c_b2'], activation=tf.nn.tanh, strides=2)
@@ -97,7 +98,7 @@ class SpatialTemporalAutoencoder(object):
         :param x: tensor of some transformed representation of input of shape (batch_size, TVOL, h, w, c)
         :return: deconvolved representation of shape (batch_size * TVOL, HEIGHT, WEIGHT, NCHANNELS)
         """
-        h, w, c = x.shape[2:]
+        h, w, c = x.get_shape().as_list()[2:]
         x = tf.reshape(x, shape=[-1, h, w, c])
         deconv1 = self.deconv2d(x, self.params['c_w3'], self.params['c_b3'],
                                 [self.batch_size * TVOL, self.params['c_w3'].shape[3], 55, 55],
@@ -113,15 +114,15 @@ class SpatialTemporalAutoencoder(object):
         :param x: convolved representation of input volume of shape (batch_size * TVOL, h, w, c)
         :return: convLSTMed representation (batch_size, TVOL, h, w, c)
         """
-        h, w, c = x.shape[1:]
+        h, w, c = x.get_shape().as_list()[1:]
         x = tf.reshape(x, shape=[-1, TVOL, h, w, c])
-        x = tf.unpack(x, axis=1)
+        x = tf.unstack(x, axis=1)
         num_filters = [64, 32, 64]
-        filter_sizes = [[3, 3] * 3]
+        filter_sizes = [[3, 3], [3, 3], [3, 3]]
         cell = tf.nn.rnn_cell.MultiRNNCell(
             [ConvLSTMCell(shape=[h, w], num_filters=num_filters[i], filter_size=filter_sizes[i])
              for i in xrange(NUM_RNN_LAYERS)])
-        states_series, _ = tf.nn.rnn.static_rnn(cell, x, dtype=tf.float32)
+        states_series, _ = tf.nn.static_rnn(cell, x, dtype=tf.float32)
         output = tf.transpose(tf.stack(states_series, axis=0), [1, 0, 2, 3, 4])
         return output
 
