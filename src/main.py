@@ -20,7 +20,7 @@ def train(data, net):
     fig = plt.plot(losses, range(1, NUM_ITER + 1))
     fig.xlabel("Iterations")
     fig.ylabel("Reconstruction loss")
-    fig.savefig("../Results/Loss.png")
+    fig.savefig("../results/Loss.png")
     return
 
 
