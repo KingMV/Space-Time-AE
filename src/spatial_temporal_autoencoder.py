@@ -134,3 +134,9 @@ class SpatialTemporalAutoencoder(object):
 
     def get_recon_errors(self, x):
         return self.per_frame_recon_errors.eval(feed_dict={self.x_: x, self.y_: x}, session=self.sess)
+
+    def save_model(self):
+        self.saver.save(self.sess, "../models/model.ckpt")
+
+    def restore_model(self):
+        self.saver.restore(self.sess, "../models/model.ckpt")

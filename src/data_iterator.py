@@ -35,12 +35,11 @@ class DataIterator(object):
         """
         batch = np.zeros(shape=(self.batch_size, TVOL) + self.test[0].shape)
         frame_indices = np.full(shape=(self.batch_size, TVOL), fill_value=-1, dtype=np.int)
-
         for i in xrange(self.batch_size):
             if not self.check_data_exhausted():
                 if self._index % FRAMES_PER_VIDEO + TVOL > FRAMES_PER_VIDEO:
                     self._index = (self._index / FRAMES_PER_VIDEO + 1) * FRAMES_PER_VIDEO
-                batch[i] = self.train[self._index:self._index + TVOL]
+                batch[i] = self.train[self._index:(self._index + TVOL)]
                 frame_indices[i] = np.arange(self._index, self._index + TVOL)
                 self._index += self._stride
             else:
