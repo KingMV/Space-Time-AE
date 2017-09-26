@@ -4,14 +4,23 @@ from data_iterator import DataIterator
 import ConfigParser
 import numpy as np
 from sklearn.metrics import roc_auc_score
+import matplotlib.pyplot as plt
 
 
 def train(data, net):
+    losses = []
+    print_every = 10
     for i in xrange(NUM_ITER):
         tr_batch = data.get_train_batch()
         net.step(tr_batch)
-        if i % 10 == 0:
-            print("training batch reconstruction loss:", net.get_loss(tr_batch))
+        losses.append(net.get_loss(tr_batch))
+        if i % print_every == 0:
+            print("average training reconstruction loss over %g iterations: %g".format(print_every,
+                                                                                       np.mean(losses[-10:])))
+    fig = plt.plot(losses, range(1, NUM_ITER + 1))
+    fig.xlabel("Iterations")
+    fig.ylabel("Reconstruction loss")
+    fig.savefig("../Results/Loss.png")
     return
 
 
@@ -22,8 +31,8 @@ def test(data, net):
         frame_error = net.get_recon_errors(test_batch)
         for i in xrange(frame_indices.shape[0]):
             for j in xrange(frame_indices.shape[1]):
-                if frame_indices[i][j] != -1:
-                    per_frame_error[frame_indices[i][j]].append(frame_error[i][j])
+                if frame_indices[i, j] != -1:
+                    per_frame_error[frame_indices[i, j]].append(frame_error[i, j])
 
     per_frame_average_error = np.asarray(map(lambda x: np.mean(x), per_frame_error))
     abnorm_scores = (per_frame_average_error - per_frame_average_error.min()) / \
