@@ -19,6 +19,7 @@ def train(data, net):
         if i % print_every == 0:
             print("average training reconstruction loss over {0:d} iterations: {1:g}"
                   .format(print_every, np.mean(losses[-print_every:])))
+    net.save_model()
     # plot loss vs. iteration number
     plt.figure()
     plt.plot(losses, range(1, NUM_ITER + 1))
@@ -29,6 +30,7 @@ def train(data, net):
 
 
 def test(data, net):
+    net.restore_model()
     per_frame_error = [[] for _ in range(data.get_test_size())]
     while not data.check_data_exhausted():
         test_batch, frame_indices = data.get_test_batch()
