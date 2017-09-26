@@ -1,3 +1,4 @@
+from __future__ import print_function, division
 from spatial_temporal_autoencoder import SpatialTemporalAutoencoder
 from data_iterator import DataIterator
 import ConfigParser
@@ -25,7 +26,7 @@ def test(data, net):
                     per_frame_error[frame_indices[i][j]].append(frame_error[i][j])
 
     per_frame_average_error = np.asarray(map(lambda x: np.mean(x), per_frame_error))
-    abnorm_scores = per_frame_average_error - per_frame_average_error.min() / \
+    abnorm_scores = (per_frame_average_error - per_frame_average_error.min()) / \
         (per_frame_average_error.max() - per_frame_average_error.min())
     reg_scores = 1 - abnorm_scores
 
