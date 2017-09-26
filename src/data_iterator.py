@@ -14,6 +14,10 @@ class DataIterator(object):
         self.batch_size = batch_size
 
     def get_train_batch(self):
+        """
+        create volumes of videos with temporal augmentation at random
+        :return: self.batch_size volumes of videos
+        """
         batch = np.zeros(shape=(self.batch_size, TVOL) + self.train[0].shape)
         for i in xrange(self.batch_size):
             vid_idx = np.random.randint(0, self.train.shape[0] / FRAMES_PER_VIDEO)
@@ -24,6 +28,11 @@ class DataIterator(object):
         return batch
 
     def get_test_batch(self):
+        """
+        create sequential volumes of videos of batch_size and for each volume, skipping volume creation by self._stride
+        until test set is exhausted
+        :return: self.batch_size volumes of videos and index for every frame in these volumes
+        """
         batch = np.zeros(shape=(self.batch_size, TVOL) + self.test[0].shape)
         frame_indices = np.full(shape=(self.batch_size, TVOL), fill_value=-1, dtype=np.int)
 

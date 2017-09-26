@@ -4,28 +4,32 @@ from data_iterator import DataIterator
 import ConfigParser
 import numpy as np
 from sklearn.metrics import roc_auc_score
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
 def train(data, net):
     losses = []
-    print_every = 10
+    print_every = 1
     for i in xrange(NUM_ITER):
         tr_batch = data.get_train_batch()
         net.step(tr_batch)
         losses.append(net.get_loss(tr_batch))
         if i % print_every == 0:
-            print("average training reconstruction loss over %g iterations: %g".format(print_every,
-                                                                                       np.mean(losses[-10:])))
-    fig = plt.plot(losses, range(1, NUM_ITER + 1))
-    fig.xlabel("Iterations")
-    fig.ylabel("Reconstruction loss")
-    fig.savefig("../results/Loss.png")
+            print("average training reconstruction loss over {0:d} iterations: {1:g}"
+                  .format(print_every, np.mean(losses[-print_every:])))
+    # plot loss vs. iteration number
+    plt.figure()
+    plt.plot(losses, range(1, NUM_ITER + 1))
+    plt.xlabel("Iteration")
+    plt.ylabel("Reconstruction loss")
+    plt.savefig("../results/Loss.png")
     return
 
 
 def test(data, net):
-    per_frame_error = [None] * data.get_test_size()
+    per_frame_error = [[] for _ in range(data.get_test_size())]
     while not data.check_data_exhausted():
         test_batch, frame_indices = data.get_test_batch()
         frame_error = net.get_recon_errors(test_batch)
@@ -35,10 +39,10 @@ def test(data, net):
                     per_frame_error[frame_indices[i, j]].append(frame_error[i, j])
 
     per_frame_average_error = np.asarray(map(lambda x: np.mean(x), per_frame_error))
+    # min-max normalize to linearly scale into [0, 1]
     abnorm_scores = (per_frame_average_error - per_frame_average_error.min()) / \
         (per_frame_average_error.max() - per_frame_average_error.min())
     reg_scores = 1 - abnorm_scores
-
     return abnorm_scores, reg_scores
 
 
