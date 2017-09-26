@@ -33,7 +33,7 @@ class DataIterator(object):
                     self._index = (self._index / FRAMES_PER_VIDEO + 1) * FRAMES_PER_VIDEO
                 batch[i] = self.train[self._index:self._index + TVOL]
                 frame_indices[i] = np.arange(self._index, self._index + TVOL)
-                self._index += self.stride
+                self._index += self._stride
             else:
                 break
         return batch, frame_indices
