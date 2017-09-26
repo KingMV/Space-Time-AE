@@ -4,34 +4,33 @@ import ConfigParser
 import numpy as np
 from sklearn.metrics import roc_auc_score
 
-def train(d, stae):
+
+def train(data, net):
     for i in xrange(NUM_ITER):
-        tr_batch = d.get_train_batch()
-        stae.step(tr_batch)
+        tr_batch = data.get_train_batch()
+        net.step(tr_batch)
         if i % 10 == 0:
-            print("training batch reconstruction loss: ", stae.get_loss(tr_batch))
+            print("training batch reconstruction loss:", net.get_loss(tr_batch))
     return
 
 
-def test(d, stae):
-    per_frame_error = [] * d.get_test_size()
-    while not d.check_data_exhausted():
-        test_batch, frame_indices = d.get_test_batch()
-        frame_error = stae.get_recon_errors(test_batch)
+def test(data, net):
+    per_frame_error = [] * data.get_test_size()
+    while not data.check_data_exhausted():
+        test_batch, frame_indices = data.get_test_batch()
+        frame_error = net.get_recon_errors(test_batch)
         for i in xrange(frame_indices.shape[0]):
             for j in xrange(frame_indices.shape[1]):
                 if frame_indices[i][j] != -1:
                     per_frame_error[frame_indices[i][j]].append(frame_error[i][j])
 
     per_frame_average_error = np.asarray(map(lambda x: np.mean(x), per_frame_error))
-    abnormality_scores = per_frame_average_error - per_frame_average_error.min() / \
-                              (per_frame_average_error.max() - per_frame_average_error.min())
-    regularity_scores = 1 - abnormality_scores
+    abnorm_scores = per_frame_average_error - per_frame_average_error.min() / \
+        (per_frame_average_error.max() - per_frame_average_error.min())
+    reg_scores = 1 - abnorm_scores
 
-    return regularity_scores
+    return abnorm_scores, reg_scores
 
-def get_threshold(d):
-    pass
 
 if __name__ == "__main__":
     Config = ConfigParser.ConfigParser()
@@ -47,4 +46,7 @@ if __name__ == "__main__":
     stae = SpatialTemporalAutoencoder(alpha=ALPHA, batch_size=BATCH_SIZE)
 
     train(d, stae)
-    regularity_scores = test(d, stae)
+    abnormality_scores, regularity_scores = test(d, stae)
+
+    auc = roc_auc_score(d.get_test_labels(), abnormality_scores)
+    print("area under the roc curve:", auc)

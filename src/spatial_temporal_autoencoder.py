@@ -1,6 +1,5 @@
 import tensorflow as tf
 from conv_lstm_cell import ConvLSTMCell
-import numpy as np
 
 # network architecture definition
 NCHANNELS = 1
@@ -21,15 +20,15 @@ class SpatialTemporalAutoencoder(object):
         # usually y_ = x_ if reconstruction error objective
 
         self.batch_size = batch_size
-        W_init = tf.contrib.layers.xavier_initializer_conv2d()
+        w_init = tf.contrib.layers.xavier_initializer_conv2d()
         self.params = {
-            "c_w1": tf.get_variable("c_w1", shape=[11, 11, NCHANNELS, CONV1], initializer=W_init),
+            "c_w1": tf.get_variable("c_w1", shape=[11, 11, NCHANNELS, CONV1], initializer=w_init),
             "c_b1": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[CONV1])),
-            "c_w2": tf.get_variable("c_w2", shape=[5, 5, CONV1, CONV2], initializer=W_init),
+            "c_w2": tf.get_variable("c_w2", shape=[5, 5, CONV1, CONV2], initializer=w_init),
             "c_b2": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[CONV2])),
-            "c_w3": tf.get_variable("c_w3", shape=[5, 5, DECONV1, CONV2], initializer=W_init),
+            "c_w3": tf.get_variable("c_w3", shape=[5, 5, DECONV1, CONV2], initializer=w_init),
             "c_b3": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[DECONV1])),
-            "c_w4": tf.get_variable("c_w4", shape=[11, 11, DECONV2, DECONV1], initializer=W_init),
+            "c_w4": tf.get_variable("c_w4", shape=[11, 11, DECONV2, DECONV1], initializer=w_init),
             "c_b4": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[DECONV2]))
         }
 

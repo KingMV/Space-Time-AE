@@ -30,13 +30,16 @@ class DataIterator(object):
         for i in xrange(self.batch_size):
             if not self.check_data_exhausted():
                 if self._index % FRAMES_PER_VIDEO + TVOL > FRAMES_PER_VIDEO:
-                    self._index = (self._index/FRAMES_PER_VIDEO + 1) * FRAMES_PER_VIDEO
+                    self._index = (self._index / FRAMES_PER_VIDEO + 1) * FRAMES_PER_VIDEO
                 batch[i] = self.train[self._index:self._index + TVOL]
                 frame_indices[i] = np.arange(self._index, self._index + TVOL)
                 self._index += self.stride
             else:
                 break
         return batch, frame_indices
+
+    def get_test_labels(self):
+        return self.labels
 
     def get_train_size(self):
         return self.train.shape[0]
@@ -46,5 +49,3 @@ class DataIterator(object):
 
     def check_data_exhausted(self):
         return self._index + TVOL > self.test.shape[0]
-
-
