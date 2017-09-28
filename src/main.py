@@ -66,3 +66,10 @@ if __name__ == "__main__":
 
     auc = roc_auc_score(d.get_test_labels(), abnormality_scores)
     print("area under the roc curve:", auc)
+
+    plt.figure()
+    plt.plot(regularity_scores, range(1, regularity_scores.shape[0] + 1))
+    plt.xlabel("Frame number")
+    plt.ylabel("Regularity score")
+    plt.savefig("../results/Regularity.png")
+
