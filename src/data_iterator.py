@@ -39,9 +39,7 @@ class DataIterator(object):
             if not self.check_data_exhausted():
                 if self._index % FRAMES_PER_VIDEO + TVOL > FRAMES_PER_VIDEO:
                     self._index = (self._index / FRAMES_PER_VIDEO + 1) * FRAMES_PER_VIDEO
-                    if self.check_data_exhausted():
-                        break
-                batch[i] = self.train[self._index:(self._index + TVOL)]
+                batch[i] = self.test[self._index:(self._index + TVOL)]
                 frame_indices[i] = np.arange(self._index, self._index + TVOL)
                 self._index += self._stride
             else:
