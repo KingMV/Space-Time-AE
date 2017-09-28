@@ -4,6 +4,7 @@ from data_iterator import DataIterator
 import ConfigParser
 import numpy as np
 from sklearn.metrics import roc_auc_score
+import logging
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -11,18 +12,18 @@ import matplotlib.pyplot as plt
 
 def train(data, net):
     losses = []
-    print_every = 1
+    print_every = 10
     for i in xrange(NUM_ITER):
         tr_batch = data.get_train_batch()
         net.step(tr_batch)
         losses.append(net.get_loss(tr_batch))
         if i % print_every == 0:
-            print("average training reconstruction loss over {0:d} iterations: {1:g}"
-                  .format(print_every, np.mean(losses[-print_every:])))
+            logging.info("average training reconstruction loss over {0:d} iterations: {1:g}"
+                         .format(print_every, np.mean(losses[-print_every:])))
     net.save_model()
     # plot loss vs. iteration number
     plt.figure()
-    plt.plot(losses, range(1, NUM_ITER + 1))
+    plt.plot(range(1, NUM_ITER + 1), losses)
     plt.xlabel("Iteration")
     plt.ylabel("Reconstruction loss")
     plt.savefig("../results/Loss.png")
@@ -57,6 +58,7 @@ if __name__ == "__main__":
     P_TRAIN = Config.get("Default", "P_TRAIN")
     P_TEST = Config.get("Default", "P_TEST")
     P_LABELS = Config.get("Default", "P_LABELS")
+    logging.basicConfig(filename="STAE.log", level=logging.INFO)
 
     d = DataIterator(P_TRAIN, P_TEST, P_LABELS, batch_size=BATCH_SIZE)
     stae = SpatialTemporalAutoencoder(alpha=ALPHA, batch_size=BATCH_SIZE)
@@ -65,10 +67,10 @@ if __name__ == "__main__":
     abnormality_scores, regularity_scores = test(d, stae)
 
     auc = roc_auc_score(d.get_test_labels(), abnormality_scores)
-    print("area under the roc curve:", auc)
+    logging.info("area under the roc curve:", auc)
 
     plt.figure()
-    plt.plot(regularity_scores, range(1, regularity_scores.shape[0] + 1))
+    plt.plot(range(1, regularity_scores.shape[0] + 1), regularity_scores)
     plt.xlabel("Frame number")
     plt.ylabel("Regularity score")
     plt.savefig("../results/Regularity.png")
