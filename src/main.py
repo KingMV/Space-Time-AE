@@ -67,7 +67,7 @@ if __name__ == "__main__":
     abnormality_scores, regularity_scores = test(d, stae)
 
     auc = roc_auc_score(d.get_test_labels(), abnormality_scores)
-    logging.info("area under the roc curve:", auc)
+    logging.info("area under the roc curve: {0:g}".format(auc))
 
     plt.figure()
     plt.plot(range(1, regularity_scores.shape[0] + 1), regularity_scores)
