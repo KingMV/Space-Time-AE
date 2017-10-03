@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 def train(data, net):
     best_auc = -float('inf')
-    best_reg_scores, best_auc = None
+    best_reg_scores = None
     aucs = []
     losses = []
     print_every = 10
