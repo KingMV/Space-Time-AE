@@ -25,6 +25,8 @@ def train(data, net):
                          .format(print_every, np.mean(losses[-print_every:])))
         if i % auc_every == 0:
             reg, a_roc = test(data, net)
+            logging.info("area under the roc curve at iteration {0:d}: {1:g}"
+                         .format(i, a_roc))
             aucs.append(a_roc)
             if a_roc > best_auc:
                 best_reg_scores = reg
