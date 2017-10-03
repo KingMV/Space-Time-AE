@@ -15,8 +15,9 @@ def train(data, net):
     best_reg_scores = None
     aucs = []
     losses = []
-    print_every = 10
-    auc_every = 1
+    print_every = 20
+    auc_every = 50
+    # around 180 iterations exhausts whole training data once
     for i in xrange(1, NUM_ITER + 1):
         tr_batch = data.get_train_batch()
         net.step(tr_batch)
@@ -37,10 +38,10 @@ def train(data, net):
     plt.xlabel("Iteration")
     plt.ylabel("Reconstruction loss")
     plt.savefig("../results/Loss.png")
-    # plot auc vs. iteration number
+    # plot auc vs. iteration number / auc_every
     plt.figure()
     plt.plot(range(1, len(aucs) + 1), aucs)
-    plt.xlabel("Iteration")
+    plt.xlabel("Training progress")
     plt.ylabel("Area under the roc curve")
     plt.savefig("../results/AUC.png")
     return best_reg_scores, best_auc
