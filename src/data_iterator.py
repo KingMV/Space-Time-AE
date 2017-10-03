@@ -57,3 +57,6 @@ class DataIterator(object):
 
     def check_data_exhausted(self):
         return self._index + TVOL > self.test.shape[0]
+
+    def reset_index(self):
+        self._index = 0

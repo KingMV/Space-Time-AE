@@ -47,6 +47,7 @@ def train(data, net):
 
 
 def test(data, net):
+    data.reset_index()
     per_frame_error = [[] for _ in range(data.get_test_size())]
     while not data.check_data_exhausted():
         test_batch, frame_indices = data.get_test_batch()
