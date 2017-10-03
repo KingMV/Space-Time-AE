@@ -5,9 +5,7 @@ import ConfigParser
 import numpy as np
 from sklearn.metrics import roc_auc_score
 import logging
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+from plots import plot_loss, plot_auc, plot_regularity
 
 
 def train(data, net):
@@ -32,18 +30,8 @@ def train(data, net):
                 best_reg_scores = reg
                 best_auc = a_roc
                 net.save_model()
-    # plot loss vs. iteration number
-    plt.figure()
-    plt.plot(range(1, NUM_ITER + 1), losses)
-    plt.xlabel("Iteration")
-    plt.ylabel("Reconstruction loss")
-    plt.savefig("../results/Loss.png")
-    # plot auc vs. iteration number / auc_every
-    plt.figure()
-    plt.plot(range(1, len(aucs) + 1), aucs)
-    plt.xlabel("Training progress")
-    plt.ylabel("Area under the roc curve")
-    plt.savefig("../results/AUC.png")
+    plot_loss(iters=NUM_ITER, losses=losses)
+    plot_auc(aucs=aucs)
     return best_reg_scores, best_auc
 
 
@@ -82,13 +70,7 @@ if __name__ == "__main__":
     stae = SpatialTemporalAutoencoder(alpha=ALPHA, batch_size=BATCH_SIZE)
 
     regularity_scores, area_under_roc = train(d, stae)
-
     logging.info("Best area under the roc curve: {0:g}".format(area_under_roc))
-
-    plt.figure()
-    plt.plot(range(1, regularity_scores.shape[0] + 1), regularity_scores)
-    plt.xlabel("Frame number")
-    plt.ylabel("Regularity score")
-    plt.savefig("../results/Regularity.png")
+    plot_regularity(regularity_scores, d.get_test_labels())
 
     np.save('../results/regularity_scores.npy', regularity_scores)
