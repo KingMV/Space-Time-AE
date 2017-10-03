@@ -11,27 +11,42 @@ import matplotlib.pyplot as plt
 
 
 def train(data, net):
+    best_auc = -float('inf')
+    best_reg_scores, best_auc = None
+    aucs = []
     losses = []
     print_every = 10
-    for i in xrange(NUM_ITER):
+    auc_every = 1
+    for i in xrange(1, NUM_ITER + 1):
         tr_batch = data.get_train_batch()
         net.step(tr_batch)
         losses.append(net.get_loss(tr_batch))
         if i % print_every == 0:
             logging.info("average training reconstruction loss over {0:d} iterations: {1:g}"
                          .format(print_every, np.mean(losses[-print_every:])))
-    net.save_model()
+        if i % auc_every == 0:
+            reg, a_roc = test(data, net)
+            aucs.append(a_roc)
+            if a_roc > best_auc:
+                best_reg_scores = reg
+                best_auc = a_roc
+                net.save_model()
     # plot loss vs. iteration number
     plt.figure()
     plt.plot(range(1, NUM_ITER + 1), losses)
     plt.xlabel("Iteration")
     plt.ylabel("Reconstruction loss")
     plt.savefig("../results/Loss.png")
-    return
+    # plot auc vs. iteration number
+    plt.figure()
+    plt.plot(range(1, len(aucs) + 1), aucs)
+    plt.xlabel("Iteration")
+    plt.ylabel("Area under the roc curve")
+    plt.savefig("../results/AUC.png")
+    return best_reg_scores, best_auc
 
 
 def test(data, net):
-    net.restore_model()
     per_frame_error = [[] for _ in range(data.get_test_size())]
     while not data.check_data_exhausted():
         test_batch, frame_indices = data.get_test_batch()
@@ -46,7 +61,8 @@ def test(data, net):
     abnorm_scores = (per_frame_average_error - per_frame_average_error.min()) / \
         (per_frame_average_error.max() - per_frame_average_error.min())
     reg_scores = 1 - abnorm_scores
-    return abnorm_scores, reg_scores
+    auc = roc_auc_score(data.get_test_labels(), abnorm_scores)
+    return reg_scores, auc
 
 
 if __name__ == "__main__":
@@ -63,11 +79,9 @@ if __name__ == "__main__":
     d = DataIterator(P_TRAIN, P_TEST, P_LABELS, batch_size=BATCH_SIZE)
     stae = SpatialTemporalAutoencoder(alpha=ALPHA, batch_size=BATCH_SIZE)
 
-    train(d, stae)
-    abnormality_scores, regularity_scores = test(d, stae)
+    regularity_scores, area_under_roc = train(d, stae)
 
-    auc = roc_auc_score(d.get_test_labels(), abnormality_scores)
-    logging.info("area under the roc curve: {0:g}".format(auc))
+    logging.info("Best area under the roc curve: {0:g}".format(area_under_roc))
 
     plt.figure()
     plt.plot(range(1, regularity_scores.shape[0] + 1), regularity_scores)
@@ -75,3 +89,4 @@ if __name__ == "__main__":
     plt.ylabel("Regularity score")
     plt.savefig("../results/Regularity.png")
 
+    np.save('../results/regularity_scores.npy', regularity_scores)
