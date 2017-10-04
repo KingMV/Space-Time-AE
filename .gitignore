@@ -5,6 +5,7 @@ models/
 .DS_Store
 .idea/
 results/archive
+results/*.npy
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
