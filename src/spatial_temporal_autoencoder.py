@@ -14,7 +14,7 @@ NUM_RNN_LAYERS = 3
 
 
 class SpatialTemporalAutoencoder(object):
-    def __init__(self, alpha, batch_size):
+    def __init__(self, alpha, batch_size, lambd):
         self.x_ = tf.placeholder(tf.float32, [None, TVOL, HEIGHT, WIDTH, NCHANNELS])
         self.y_ = tf.placeholder(tf.float32, [None, TVOL, HEIGHT, WIDTH, NCHANNELS])
         # usually y_ = x_ if reconstruction error objective
@@ -22,14 +22,14 @@ class SpatialTemporalAutoencoder(object):
         self.batch_size = batch_size
         w_init = tf.contrib.layers.xavier_initializer_conv2d()
         self.params = {
-            "c_w1": tf.get_variable("c_w1", shape=[11, 11, NCHANNELS, CONV1], initializer=w_init),
-            "c_b1": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[CONV1])),
-            "c_w2": tf.get_variable("c_w2", shape=[5, 5, CONV1, CONV2], initializer=w_init),
-            "c_b2": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[CONV2])),
-            "c_w3": tf.get_variable("c_w3", shape=[5, 5, DECONV1, CONV2], initializer=w_init),
-            "c_b3": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[DECONV1])),
-            "c_w4": tf.get_variable("c_w4", shape=[11, 11, DECONV2, DECONV1], initializer=w_init),
-            "c_b4": tf.Variable(tf.constant(0.05, dtype=tf.float32, shape=[DECONV2]))
+            "c_w1": tf.get_variable("c_weight1", shape=[11, 11, NCHANNELS, CONV1], initializer=w_init),
+            "c_b1": tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[CONV1]), name="c_bias1"),
+            "c_w2": tf.get_variable("c_weight2", shape=[5, 5, CONV1, CONV2], initializer=w_init),
+            "c_b2": tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[CONV2]), name="c_bias2"),
+            "c_w3": tf.get_variable("c_weight3", shape=[5, 5, DECONV1, CONV2], initializer=w_init),
+            "c_b3": tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[DECONV1]), name="c_bias3"),
+            "c_w4": tf.get_variable("c_weight4", shape=[11, 11, DECONV2, DECONV1], initializer=w_init),
+            "c_b4": tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[DECONV2]), name="c_bias4")
         }
 
         self.conved = self.spatial_encoder(self.x_)
@@ -40,8 +40,9 @@ class SpatialTemporalAutoencoder(object):
         self.per_frame_recon_errors = tf.reduce_mean(tf.pow(self.y_ - self.y, 2), axis=[2, 3, 4])
 
         self.reconstruction_loss = tf.reduce_mean(tf.pow(self.y_ - self.y, 2))
-        self.regularization_loss = tf.constant(0.0, tf.float32)
-        self.loss = self.reconstruction_loss + self.regularization_loss
+        self.vars = tf.trainable_variables()
+        self.regularization_loss = tf.add_n([tf.nn.l2_loss(v) for v in self.vars if 'bias' not in v.name])
+        self.loss = self.reconstruction_loss + lambd * self.regularization_loss
         self.optimizer = tf.train.AdamOptimizer(alpha).minimize(self.loss)
 
         self.saver = tf.train.Saver()
@@ -104,7 +105,7 @@ class SpatialTemporalAutoencoder(object):
         num_filters = [64, 32, 64]
         filter_sizes = [[3, 3], [3, 3], [3, 3]]
         cell = tf.nn.rnn_cell.MultiRNNCell(
-            [ConvLSTMCell(shape=[h, w], num_filters=num_filters[i], filter_size=filter_sizes[i])
+            [ConvLSTMCell(shape=[h, w], num_filters=num_filters[i], filter_size=filter_sizes[i], layer_id=i)
              for i in xrange(NUM_RNN_LAYERS)])
         states_series, _ = tf.nn.static_rnn(cell, x, dtype=tf.float32)
         output = tf.transpose(tf.stack(states_series, axis=0), [1, 0, 2, 3, 4])

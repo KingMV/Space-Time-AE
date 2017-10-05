@@ -62,6 +62,7 @@ if __name__ == "__main__":
     Config.read('../config/config.ini')
     NUM_ITER = int(Config.get("Default", "NUM_ITER"))
     ALPHA = float(Config.get("Default", "ALPHA"))
+    LAMBDA = float(Config.get("Default", "LAMBDA"))
     BATCH_SIZE = int(Config.get("Default", "BATCH_SIZE"))
     P_TRAIN = Config.get("Default", "P_TRAIN")
     P_TEST = Config.get("Default", "P_TEST")
@@ -69,7 +70,7 @@ if __name__ == "__main__":
     logging.basicConfig(filename="STAE.log", level=logging.INFO)
 
     d = DataIterator(P_TRAIN, P_TEST, P_LABELS, batch_size=BATCH_SIZE)
-    stae = SpatialTemporalAutoencoder(alpha=ALPHA, batch_size=BATCH_SIZE)
+    stae = SpatialTemporalAutoencoder(alpha=ALPHA, batch_size=BATCH_SIZE, lambd=LAMBDA)
 
     regularity_scores, area_under_roc = train(d, stae)
     logging.info("Best area under the roc curve: {0:g}".format(area_under_roc))
