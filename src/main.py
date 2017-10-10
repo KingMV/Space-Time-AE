@@ -89,7 +89,7 @@ if __name__ == "__main__":
     d = DataIterator(P_TRAIN, P_TEST, P_LABELS, batch_size=BATCH_SIZE)
     stae = SpatialTemporalAutoencoder(alpha=ALPHA, batch_size=BATCH_SIZE, lambd=LAMBDA)
 
-    regularity_scores, area_under_roc = train(d, stae)
+    regularity_scores, area_under_roc, equal_error_rate = train(d, stae)
     logging.info("Best area under the roc curve: {0:g}".format(area_under_roc))
     plot_regularity(regularity_scores, d.get_test_labels())
 
