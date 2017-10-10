@@ -17,6 +17,7 @@ class SpatialTemporalAutoencoder(object):
     def __init__(self, alpha, batch_size, lambd):
         self.x_ = tf.placeholder(tf.float32, [None, TVOL, HEIGHT, WIDTH, NCHANNELS])
         self.y_ = tf.placeholder(tf.float32, [None, TVOL, HEIGHT, WIDTH, NCHANNELS])
+        self.phase = tf.placeholder(tf.bool, name='is_training')
         # usually y_ = x_ if reconstruction error objective
 
         self.batch_size = batch_size
@@ -51,7 +52,7 @@ class SpatialTemporalAutoencoder(object):
         self.sess.run(tf.global_variables_initializer())
 
     @staticmethod
-    def conv2d(x, w, b, activation=tf.nn.tanh, strides=1):
+    def conv2d(x, w, b, activation=tf.nn.tanh, strides=1, phase=True):
         """
         Build a convolutional layer
         :param x: input
@@ -63,10 +64,11 @@ class SpatialTemporalAutoencoder(object):
         """
         x = tf.nn.conv2d(x, w, strides=[1, strides, strides, 1], padding='VALID')
         x = tf.nn.bias_add(x, b)
+        x = tf.contrib.layers.batch_norm(x, center=True, scale=True, is_training=phase)
         return activation(x)
 
     @staticmethod
-    def deconv2d(x, w, b, out_shape, activation=tf.nn.tanh, strides=1):
+    def deconv2d(x, w, b, out_shape, activation=tf.nn.tanh, strides=1, phase=True, last=False):
         """
         Build a deconvolutional layer
         :param x: input
@@ -75,11 +77,17 @@ class SpatialTemporalAutoencoder(object):
         :param out_shape: shape of output tensor
         :param activation: activation func
         :param strides: the stride when filter is scanning
+        :param phase: training phase or not
+        :param last: last layer of the network or not
         :return: a deconvolutional layer representation
         """
         x = tf.nn.conv2d_transpose(x, w, output_shape=out_shape, strides=[1, strides, strides, 1], padding='VALID')
         x = tf.nn.bias_add(x, b)
-        return activation(x)
+        if last:
+            return x
+        else:
+            x = tf.contrib.layers.batch_norm(x, center=True, scale=True, is_training=phase)
+            return activation(x)
 
     def spatial_encoder(self, x):
         """
@@ -89,8 +97,10 @@ class SpatialTemporalAutoencoder(object):
         """
         h, w, c = x.get_shape().as_list()[2:]
         x = tf.reshape(x, shape=[-1, h, w, c])
-        conv1 = self.conv2d(x, self.params['c_w1'], self.params['c_b1'], activation=tf.nn.tanh, strides=4)
-        conv2 = self.conv2d(conv1, self.params['c_w2'], self.params['c_b2'], activation=tf.nn.tanh, strides=2)
+        conv1 = self.conv2d(x, self.params['c_w1'], self.params['c_b1'], activation=tf.nn.tanh, strides=4,
+                            phase=self.phase)
+        conv2 = self.conv2d(conv1, self.params['c_w2'], self.params['c_b2'], activation=tf.nn.tanh, strides=2,
+                            phase=self.phase)
         return conv2
 
     def temporal_encoder_decoder(self, x):
@@ -124,17 +134,18 @@ class SpatialTemporalAutoencoder(object):
                                 activation=tf.nn.tanh, strides=2)
         deconv2 = self.deconv2d(deconv1, self.params['c_w4'], self.params['c_b4'],
                                 [self.batch_size * TVOL, HEIGHT, WIDTH, DECONV2],
-                                activation=tf.nn.tanh, strides=4)
+                                activation=tf.nn.tanh, strides=4, phase=self.phase, last=True)
         return deconv2
 
-    def get_loss(self, x):
-        return self.loss.eval(feed_dict={self.x_: x, self.y_: x}, session=self.sess)
+    def get_loss(self, x, is_training):
+        return self.loss.eval(feed_dict={self.x_: x, self.y_: x, self.phase: is_training}, session=self.sess)
 
-    def step(self, x):
-        self.sess.run(self.optimizer, feed_dict={self.x_: x, self.y_: x})
+    def step(self, x, is_training):
+        self.sess.run(self.optimizer, feed_dict={self.x_: x, self.y_: x, self.phase: is_training})
 
-    def get_recon_errors(self, x):
-        return self.per_frame_recon_errors.eval(feed_dict={self.x_: x, self.y_: x}, session=self.sess)
+    def get_recon_errors(self, x, is_training):
+        return self.per_frame_recon_errors.eval(feed_dict={self.x_: x, self.y_: x, self.phase: is_training},
+                                                session=self.sess)
 
     def save_model(self):
         self.saver.save(self.sess, "../models/model.ckpt")
