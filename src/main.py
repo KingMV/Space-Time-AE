@@ -91,6 +91,7 @@ if __name__ == "__main__":
 
     regularity_scores, area_under_roc, equal_error_rate = train(d, stae)
     logging.info("Best area under the roc curve: {0:g}".format(area_under_roc))
+    logging.info("Equal error rate corresponding to best auc: {0:g}".format(equal_error_rate))
     plot_regularity(regularity_scores, d.get_test_labels())
 
     np.save('../results/regularity_scores.npy', regularity_scores)
