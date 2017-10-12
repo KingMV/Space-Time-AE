@@ -6,28 +6,14 @@ import numpy as np
 from sklearn.metrics import roc_auc_score, roc_curve
 import logging
 from plots import plot_loss, plot_auc, plot_regularity
-
-
-def compute_eer(far, frr):
-    cords = zip(far, frr)
-    min_dist = 999999
-    for item in cords:
-        item_far, item_frr = item
-        dist = abs(item_far - item_frr)
-        if dist < min_dist:
-            min_dist = dist
-            eer = (item_far + item_frr) / 2
-    return eer
+from utils import compute_eer
 
 
 def train(data, net):
     best_auc = -float('inf')
     best_reg_scores = None
-    aucs = []
-    eers = []
-    losses = []
-    print_every = 20
-    auc_every = 50
+    aucs, eers, losses = [], [], []
+    print_every, auc_every = 20, 50
     # around 180 iterations exhausts whole training data once
     for i in xrange(1, NUM_ITER + 1):
         tr_batch = data.get_train_batch()
