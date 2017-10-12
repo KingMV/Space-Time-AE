@@ -1,5 +1,6 @@
 *.out
 *.log
+logs/
 data/
 models/
 .DS_Store

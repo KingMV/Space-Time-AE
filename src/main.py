@@ -7,6 +7,9 @@ from sklearn.metrics import roc_auc_score, roc_curve
 import logging
 from plots import plot_loss, plot_auc, plot_regularity
 from utils import compute_eer
+import os
+import time
+import datetime
 
 
 def train(data, net):
@@ -70,7 +73,12 @@ if __name__ == "__main__":
     P_TRAIN = Config.get("Default", "P_TRAIN")
     P_TEST = Config.get("Default", "P_TEST")
     P_LABELS = Config.get("Default", "P_LABELS")
-    logging.basicConfig(filename="STAE.log", level=logging.INFO)
+
+    ts = time.time()
+    dt = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
+    logging.basicConfig(filename="logs/"+dt+".log", level=logging.INFO)
 
     d = DataIterator(P_TRAIN, P_TEST, P_LABELS, batch_size=BATCH_SIZE)
     stae = SpatialTemporalAutoencoder(alpha=ALPHA, batch_size=BATCH_SIZE, lambd=LAMBDA)
