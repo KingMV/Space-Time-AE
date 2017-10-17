@@ -2,7 +2,8 @@ from PIL import Image
 import os
 from glob import glob
 import numpy as np
-from scipy.misc import imresize as resize
+from cv2 import resize
+
 
 train_dir = "../data/UCSD_Anomaly_Dataset.v1p2/UCSDped1/Train"
 test_dir = "../data/UCSD_Anomaly_Dataset.v1p2/UCSDped1/Test"
