@@ -24,13 +24,13 @@ class SpatialTemporalAutoencoder(object):
         w_init = tf.contrib.layers.xavier_initializer_conv2d()
         self.params = {
             "c_w1": tf.get_variable("c_weight1", shape=[11, 11, NCHANNELS, CONV1], initializer=w_init),
-            "c_b1": tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[CONV1]), name="c_bias1"),
+            "c_b1": tf.Variable(tf.constant(0.01, dtype=tf.float32, shape=[CONV1]), name="c_bias1"),
             "c_w2": tf.get_variable("c_weight2", shape=[5, 5, CONV1, CONV2], initializer=w_init),
-            "c_b2": tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[CONV2]), name="c_bias2"),
+            "c_b2": tf.Variable(tf.constant(0.01, dtype=tf.float32, shape=[CONV2]), name="c_bias2"),
             "c_w3": tf.get_variable("c_weight3", shape=[5, 5, DECONV1, CONV2], initializer=w_init),
-            "c_b3": tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[DECONV1]), name="c_bias3"),
+            "c_b3": tf.Variable(tf.constant(0.01, dtype=tf.float32, shape=[DECONV1]), name="c_bias3"),
             "c_w4": tf.get_variable("c_weight4", shape=[11, 11, DECONV2, DECONV1], initializer=w_init),
-            "c_b4": tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[DECONV2]), name="c_bias4")
+            "c_b4": tf.Variable(tf.constant(0.01, dtype=tf.float32, shape=[DECONV2]), name="c_bias4")
         }
 
         self.conved = self.spatial_encoder(self.x_)
