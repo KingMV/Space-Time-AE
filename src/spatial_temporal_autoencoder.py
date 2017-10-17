@@ -44,7 +44,7 @@ class SpatialTemporalAutoencoder(object):
         self.vars = tf.trainable_variables()
         self.regularization_loss = tf.add_n([tf.nn.l2_loss(v) for v in self.vars if 'bias' not in v.name])
         self.loss = self.reconstruction_loss + lambd * self.regularization_loss
-        self.optimizer = tf.train.AdamOptimizer(alpha).minimize(self.loss)
+        self.optimizer = tf.train.AdamOptimizer(alpha, epsilon=1e-2).minimize(self.loss)
 
         self.saver = tf.train.Saver()
 

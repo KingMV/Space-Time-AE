@@ -57,9 +57,9 @@ def test(data, net):
     abnorm_scores = (per_frame_average_error - per_frame_average_error.min()) / \
         (per_frame_average_error.max() - per_frame_average_error.min())
     reg_scores = 1 - abnorm_scores
-    auc = roc_auc_score(data.get_test_labels(), abnorm_scores)
-    fpr, tpr, thresholds = roc_curve(data.get_test_labels(), abnorm_scores, pos_label=1)
-    eer = compute_eer(fpr, 1 - tpr)
+    auc = roc_auc_score(y_true=data.get_test_labels(), y_score=abnorm_scores)
+    fpr, tpr, thresholds = roc_curve(y_true=data.get_test_labels(), y_score=abnorm_scores, pos_label=1)
+    eer = compute_eer(far=fpr, frr=1 - tpr)
     return reg_scores, auc, eer
 
 
@@ -83,9 +83,9 @@ if __name__ == "__main__":
     d = DataIterator(P_TRAIN, P_TEST, P_LABELS, batch_size=BATCH_SIZE)
     stae = SpatialTemporalAutoencoder(alpha=ALPHA, batch_size=BATCH_SIZE, lambd=LAMBDA)
 
-    regularity_scores, area_under_roc, equal_error_rate = train(d, stae)
+    regularity_scores, area_under_roc, equal_error_rate = train(data=d, net=stae)
     logging.info("Best area under the roc curve: {0:g}".format(area_under_roc))
     logging.info("Equal error rate corresponding to best auc: {0:g}".format(equal_error_rate))
-    plot_regularity(regularity_scores, d.get_test_labels())
+    plot_regularity(regularity_scores=regularity_scores, labels=d.get_test_labels())
 
     np.save('../results/regularity_scores.npy', regularity_scores)

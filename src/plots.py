@@ -10,7 +10,7 @@ def plot_loss(iters, losses):
     plt.figure()
     plt.plot(range(1, iters + 1), losses)
     plt.xlabel("Iteration")
-    plt.ylabel("Reconstruction loss")
+    plt.ylabel("Total loss")
     plt.savefig("../results/Loss.png")
 
 
