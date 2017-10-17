@@ -34,7 +34,7 @@ class SpatialTemporalAutoencoder(object):
         }
 
         self.conved = self.spatial_encoder(self.x_)
-        #self.convLSTMed = self.temporal_encoder_decoder(self.conved)
+        self.convLSTMed = self.temporal_encoder_decoder(self.conved)
         self.y = self.spatial_decoder(self.conved)
         self.y = tf.reshape(self.y, shape=[-1, TVOL, HEIGHT, WIDTH, NCHANNELS])
 
@@ -128,8 +128,8 @@ class SpatialTemporalAutoencoder(object):
         :param x: tensor of some transformed representation of input of shape (batch_size, TVOL, h, w, c)
         :return: deconvolved representation of shape (batch_size * TVOL, HEIGHT, WEIGHT, NCHANNELS)
         """
-        #h, w, c = x.get_shape().as_list()[2:]
-        #x = tf.reshape(x, shape=[-1, h, w, c])
+        h, w, c = x.get_shape().as_list()[2:]
+        x = tf.reshape(x, shape=[-1, h, w, c])
         deconv1 = self.deconv2d(x, self.params['c_w3'], self.params['c_b3'],
                                 [self.batch_size * TVOL, 55, 55, DECONV1],
                                 activation=tf.nn.relu, strides=2)
