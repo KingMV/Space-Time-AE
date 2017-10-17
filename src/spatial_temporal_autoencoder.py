@@ -52,7 +52,7 @@ class SpatialTemporalAutoencoder(object):
         self.sess.run(tf.global_variables_initializer())
 
     @staticmethod
-    def conv2d(x, w, b, activation=tf.nn.tanh, strides=1, phase=True):
+    def conv2d(x, w, b, activation=tf.nn.relu, strides=1, phase=True):
         """
         Build a convolutional layer
         :param x: input
@@ -60,6 +60,7 @@ class SpatialTemporalAutoencoder(object):
         :param b: bias
         :param activation: activation func
         :param strides: the stride when filter is scanning through image
+        :param phase: training phase or not
         :return: a convolutional layer representation
         """
         x = tf.nn.conv2d(x, w, strides=[1, strides, strides, 1], padding='VALID')
@@ -68,7 +69,7 @@ class SpatialTemporalAutoencoder(object):
         return activation(x)
 
     @staticmethod
-    def deconv2d(x, w, b, out_shape, activation=tf.nn.tanh, strides=1, phase=True, last=False):
+    def deconv2d(x, w, b, out_shape, activation=tf.nn.relu, strides=1, phase=True, last=False):
         """
         Build a deconvolutional layer
         :param x: input
@@ -97,9 +98,9 @@ class SpatialTemporalAutoencoder(object):
         """
         h, w, c = x.get_shape().as_list()[2:]
         x = tf.reshape(x, shape=[-1, h, w, c])
-        conv1 = self.conv2d(x, self.params['c_w1'], self.params['c_b1'], activation=tf.nn.tanh, strides=4,
+        conv1 = self.conv2d(x, self.params['c_w1'], self.params['c_b1'], activation=tf.nn.relu, strides=4,
                             phase=self.phase)
-        conv2 = self.conv2d(conv1, self.params['c_w2'], self.params['c_b2'], activation=tf.nn.tanh, strides=2,
+        conv2 = self.conv2d(conv1, self.params['c_w2'], self.params['c_b2'], activation=tf.nn.relu, strides=2,
                             phase=self.phase)
         return conv2
 
@@ -131,10 +132,10 @@ class SpatialTemporalAutoencoder(object):
         #x = tf.reshape(x, shape=[-1, h, w, c])
         deconv1 = self.deconv2d(x, self.params['c_w3'], self.params['c_b3'],
                                 [self.batch_size * TVOL, 55, 55, DECONV1],
-                                activation=tf.nn.tanh, strides=2)
+                                activation=tf.nn.relu, strides=2)
         deconv2 = self.deconv2d(deconv1, self.params['c_w4'], self.params['c_b4'],
                                 [self.batch_size * TVOL, HEIGHT, WIDTH, DECONV2],
-                                activation=tf.nn.tanh, strides=4, phase=self.phase, last=True)
+                                activation=tf.nn.relu, strides=4, phase=self.phase, last=True)
         return deconv2
 
     def get_loss(self, x, is_training):
