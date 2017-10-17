@@ -35,7 +35,7 @@ class SpatialTemporalAutoencoder(object):
 
         self.conved = self.spatial_encoder(self.x_)
         self.convLSTMed = self.temporal_encoder_decoder(self.conved)
-        self.y = self.spatial_decoder(self.conved)
+        self.y = self.spatial_decoder(self.convLSTMed)
         self.y = tf.reshape(self.y, shape=[-1, TVOL, HEIGHT, WIDTH, NCHANNELS])
 
         self.per_frame_recon_errors = tf.reduce_mean(tf.pow(self.y_ - self.y, 2), axis=[2, 3, 4])
@@ -96,7 +96,7 @@ class SpatialTemporalAutoencoder(object):
         :param x: tensor of input image of shape (batch_size, TVOL, HEIGHT, WIDTH, NCHANNELS)
         :return: convolved representation of shape (batch_size * TVOL, h, w, c)
         """
-        h, w, c = x.get_shape().as_list()[2:]
+        _, _, h, w, c = x.get_shape().as_list()
         x = tf.reshape(x, shape=[-1, h, w, c])
         conv1 = self.conv2d(x, self.params['c_w1'], self.params['c_b1'], activation=tf.nn.relu, strides=4,
                             phase=self.phase)
@@ -110,7 +110,7 @@ class SpatialTemporalAutoencoder(object):
         :param x: convolved representation of input volume of shape (batch_size * TVOL, h, w, c)
         :return: convLSTMed representation (batch_size, TVOL, h, w, c)
         """
-        h, w, c = x.get_shape().as_list()[1:]
+        _, h, w, c = x.get_shape().as_list()
         x = tf.reshape(x, shape=[-1, TVOL, h, w, c])
         x = tf.unstack(x, axis=1)
         num_filters = [64, 32, 64]
@@ -128,7 +128,7 @@ class SpatialTemporalAutoencoder(object):
         :param x: tensor of some transformed representation of input of shape (batch_size, TVOL, h, w, c)
         :return: deconvolved representation of shape (batch_size * TVOL, HEIGHT, WEIGHT, NCHANNELS)
         """
-        h, w, c = x.get_shape().as_list()[2:]
+        _, _, h, w, c = x.get_shape().as_list()
         x = tf.reshape(x, shape=[-1, h, w, c])
         deconv1 = self.deconv2d(x, self.params['c_w3'], self.params['c_b3'],
                                 [self.batch_size * TVOL, 55, 55, DECONV1],
