@@ -8,10 +8,10 @@ train_dir = "/Users/tnybny/Documents/Anomaly detection in video/UCSD_Anomaly_Dat
 test_dir = "/Users/tnybny/Documents/Anomaly detection in video/UCSD_Anomaly_Dataset.v1p2/UCSDped1/Test"
 
 # load images and resize to 227 x 227
-train = [resize(np.array(Image.open(y)), (227, 227)) for x in os.walk(train_dir) for y in glob(os.path.join(x[0],
-                                                                                                            '*.tif'))]
-test = [resize(np.array(Image.open(y)), (227, 227)) for x in os.walk(test_dir) for y in glob(os.path.join(x[0],
-                                                                                                          '*.tif'))]
+train = [resize(np.array(Image.open(y)), (227, 227)) for x in os.walk(train_dir) for y in sorted(
+    glob(os.path.join(x[0], '*.tif')))]
+test = [resize(np.array(Image.open(y)), (227, 227)) for x in os.walk(test_dir) for y in sorted(
+    glob(os.path.join(x[0], '*.tif')))]
 
 # rescale to [0, 1]
 train, test = [x / 255. for x in train], [x / 255. for x in test]
