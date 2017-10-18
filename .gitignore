@@ -1,6 +1,6 @@
 *.out
 *.log
-logs/
+src/logs/
 data/
 models/
 .DS_Store
