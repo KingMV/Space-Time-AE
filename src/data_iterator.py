@@ -5,7 +5,7 @@ TVOL = 10
 
 
 class DataIterator(object):
-    def __init__(self, p_train, p_test, p_labels, batch_size, stride=10):
+    def __init__(self, p_train, p_test, p_labels, batch_size, stride=1):
         self.train, self.test, self.labels = np.load(p_train), np.load(p_test), np.load(p_labels)
         self._index = 0
         if stride > TVOL:
