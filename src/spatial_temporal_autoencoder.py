@@ -44,7 +44,9 @@ class SpatialTemporalAutoencoder(object):
         self.vars = tf.trainable_variables()
         self.regularization_loss = tf.add_n([tf.nn.l2_loss(v) for v in self.vars if 'bias' not in v.name])
         self.loss = self.reconstruction_loss + lambd * self.regularization_loss
-        self.optimizer = tf.train.AdamOptimizer(alpha, epsilon=1e-2).minimize(self.loss)
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            self.optimizer = tf.train.AdamOptimizer(alpha, epsilon=1e-2).minimize(self.loss)
 
         self.saver = tf.train.Saver()
 
@@ -132,7 +134,7 @@ class SpatialTemporalAutoencoder(object):
         x = tf.reshape(x, shape=[-1, h, w, c])
         deconv1 = self.deconv2d(x, self.params['c_w3'], self.params['c_b3'],
                                 [self.batch_size * TVOL, 55, 55, DECONV1],
-                                activation=tf.nn.relu, strides=2)
+                                activation=tf.nn.relu, strides=2, phase=self.phase)
         deconv2 = self.deconv2d(deconv1, self.params['c_w4'], self.params['c_b4'],
                                 [self.batch_size * TVOL, HEIGHT, WIDTH, DECONV2],
                                 activation=tf.nn.relu, strides=4, phase=self.phase, last=True)
