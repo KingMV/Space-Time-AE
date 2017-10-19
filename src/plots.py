@@ -3,12 +3,14 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
-def plot_loss(iters, losses):
+def plot_loss(losses, valid_losses):
     """
     plot training loss vs. iteration number
     """
     plt.figure()
-    plt.plot(range(1, iters + 1), losses)
+    plt.plot(range(len(losses)), losses)
+    valid_loss_every = (len(losses) - 1) / (len(valid_losses) - 1)
+    plt.plot(range(0, len(losses), valid_loss_every), valid_losses)
     plt.xlabel("Iteration")
     plt.ylabel("Total loss")
     plt.savefig("../results/Loss.png")
@@ -20,7 +22,7 @@ def plot_auc(aucs):
     """
     plt.figure()
     plt.plot(range(1, len(aucs) + 1), aucs)
-    plt.xlabel("Training progress")
+    plt.xlabel("Training progress (# iter / constant)")
     plt.ylabel("Area under the roc curve")
     plt.savefig("../results/AUC.png")
 

@@ -15,10 +15,10 @@ import datetime
 def train(data, net):
     best_auc = -float('inf')
     best_reg_scores = None
-    aucs, eers, losses = [], [], []
-    print_every, auc_every = 20, 50
+    aucs, eers, losses, valid_losses = [], [], [], []
+    print_every, auc_every = 50, 50
     # around 180 iterations exhausts whole training data once
-    for i in xrange(1, NUM_ITER + 1):
+    for i in xrange(NUM_ITER + 1):
         tr_batch = data.get_train_batch()
         net.step(tr_batch, is_training=True)
         losses.append(net.get_loss(tr_batch, is_training=False))
@@ -26,9 +26,9 @@ def train(data, net):
             logging.info("average training reconstruction loss over {0:d} iterations: {1:g}"
                          .format(print_every, np.mean(losses[-print_every:])))
         if i % auc_every == 0:
-            reg, auc, eer = test(data, net)
-            logging.info("area under the roc curve at iteration {0:d}: {1:g}"
-                         .format(i, auc))
+            reg, auc, eer, valid_loss = test(data, net)
+            logging.info("area under the roc curve at iteration {0:d}: {1:g}".format(i, auc))
+            logging.info("validation loss at iteration {0:d}: {1:g}".format(i, valid_loss))
             aucs.append(auc)
             eers.append(eer)
             if auc > best_auc:
@@ -36,9 +36,13 @@ def train(data, net):
                 best_auc = auc
                 best_eer = eer
                 net.save_model()
-    plot_loss(iters=NUM_ITER, losses=losses)
+    plot_loss(losses=losses, valid_losses=valid_losses)
     plot_auc(aucs=aucs)
-    return best_reg_scores, best_auc, best_eer
+    plot_regularity(regularity_scores=best_reg_scores, labels=data.get_test_labels())
+    np.save('../results/aucs.npy', aucs)
+    np.save('../results/losses.npy', losses)
+    np.save('../results/regularity_scores.npy', reg)
+    return best_auc, best_eer
 
 
 def test(data, net):
@@ -58,9 +62,10 @@ def test(data, net):
         (per_frame_average_error.max() - per_frame_average_error.min())
     reg_scores = 1 - abnorm_scores
     auc = roc_auc_score(y_true=data.get_test_labels(), y_score=abnorm_scores)
+    valid_loss = np.mean(per_frame_average_error[data.get_test_labels() == 0])
     fpr, tpr, thresholds = roc_curve(y_true=data.get_test_labels(), y_score=abnorm_scores, pos_label=1)
     eer = compute_eer(far=fpr, frr=1 - tpr)
-    return reg_scores, auc, eer
+    return reg_scores, auc, eer, valid_loss
 
 
 if __name__ == "__main__":
@@ -83,9 +88,6 @@ if __name__ == "__main__":
     d = DataIterator(P_TRAIN, P_TEST, P_LABELS, batch_size=BATCH_SIZE)
     stae = SpatialTemporalAutoencoder(alpha=ALPHA, batch_size=BATCH_SIZE, lambd=LAMBDA)
 
-    regularity_scores, area_under_roc, equal_error_rate = train(data=d, net=stae)
+    area_under_roc, equal_error_rate = train(data=d, net=stae)
     logging.info("Best area under the roc curve: {0:g}".format(area_under_roc))
     logging.info("Equal error rate corresponding to best auc: {0:g}".format(equal_error_rate))
-    plot_regularity(regularity_scores=regularity_scores, labels=d.get_test_labels())
-
-    np.save('../results/regularity_scores.npy', regularity_scores)
