@@ -8,11 +8,12 @@ def plot_loss(losses, valid_losses):
     plot training loss vs. iteration number
     """
     plt.figure()
-    plt.plot(range(len(losses)), losses)
+    plt.plot(range(len(losses)), losses, 'b', alpha=0.6, linewidth=0.5, label="training loss")
     valid_loss_every = (len(losses) - 1) / (len(valid_losses) - 1)
-    plt.plot(range(0, len(losses), valid_loss_every), valid_losses)
+    plt.plot(range(0, len(losses), valid_loss_every), valid_losses, 'r', linewidth=0.5, label="validation loss")
     plt.xlabel("Iteration")
     plt.ylabel("Total loss")
+    plt.legend(loc='upper right')
     plt.savefig("../results/Loss.png")
 
 
@@ -32,7 +33,7 @@ def plot_regularity(regularity_scores, labels):
     plot regularity score vs. frame number and shade anomalous background using ground truth labels
     """
     plt.figure()
-    plt.plot(range(1, regularity_scores.shape[0] + 1), regularity_scores)
+    plt.plot(range(1, regularity_scores.shape[0] + 1), regularity_scores, linewidth=0.5)
     plt.xlabel("Frame number")
     plt.ylabel("Regularity score")
     for i in xrange(1, labels.shape[0] + 1):

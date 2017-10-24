@@ -46,7 +46,7 @@ class SpatialTemporalAutoencoder(object):
         self.loss = self.reconstruction_loss + lambd * self.regularization_loss
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
-            self.optimizer = tf.train.AdamOptimizer(alpha, epsilon=1e-2).minimize(self.loss)
+            self.optimizer = tf.train.AdamOptimizer(alpha, epsilon=1e-6).minimize(self.loss)
 
         self.saver = tf.train.Saver()
 

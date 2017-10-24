@@ -41,7 +41,7 @@ def train(data, net):
     plot_regularity(regularity_scores=best_reg_scores, labels=data.get_test_labels())
     np.save('../results/aucs.npy', aucs)
     np.save('../results/losses.npy', losses)
-    np.save('../results/regularity_scores.npy', reg)
+    np.save('../results/regularity_scores.npy', best_reg_scores)
     return best_auc, best_eer
 
 
