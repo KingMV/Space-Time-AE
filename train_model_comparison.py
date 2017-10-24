@@ -28,4 +28,4 @@ if __name__ == "__main__":
     data_shape = (t_volume, 224, 224, 1)
     stae = STAE(data_shape=data_shape, learning_rate=learning_rate, optimizer='adam')
 
-    train(stae, data, num_iteration=num_iteration, result_path="results/")
+    train(data, stae, num_iteration=num_iteration, result_path="results/")
