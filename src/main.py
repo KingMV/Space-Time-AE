@@ -36,12 +36,12 @@ def train(data, net):
                 best_auc = auc
                 best_eer = eer
                 net.save_model()
-    plot_loss(losses=losses, valid_losses=valid_losses)
-    plot_auc(aucs=aucs)
-    plot_regularity(regularity_scores=best_reg_scores, labels=data.get_test_labels())
-    np.save('../results/aucs.npy', aucs)
-    np.save('../results/losses.npy', losses)
-    np.save('../results/regularity_scores.npy', best_reg_scores)
+    plot_loss(losses=losses, valid_losses=valid_losses, path=result_path)
+    plot_auc(aucs=aucs, path=result_path)
+    plot_regularity(regularity_scores=best_reg_scores, labels=data.get_test_labels(), path=result_path)
+    np.save(os.path.join(result_path, "aucs.npy"), aucs)
+    np.save(os.path.join(result_path, "losses.npy"), losses)
+    np.save(os.path.join(result_path, "regularity_scores.npy"), best_reg_scores)
     return best_auc, best_eer
 
 
@@ -70,7 +70,8 @@ def test(data, net):
 
 if __name__ == "__main__":
     Config = ConfigParser.ConfigParser()
-    Config.read('../config/config.ini')
+    config_path = os.path.join("..", "config", "config.ini")
+    Config.read(config_path)
     NUM_ITER = int(Config.get("Default", "NUM_ITER"))
     ALPHA = float(Config.get("Default", "ALPHA"))
     LAMBDA = float(Config.get("Default", "LAMBDA"))
@@ -81,9 +82,9 @@ if __name__ == "__main__":
 
     ts = time.time()
     dt = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-    if not os.path.exists("logs"):
-        os.makedirs("logs")
-    logging.basicConfig(filename="logs/"+dt+".log", level=logging.INFO)
+    result_path = os.path.join("..", "results", "archive", dt)
+    os.makedirs(result_path)
+    logging.basicConfig(filename=os.path.join(result_path, "STAE.log"), level=logging.INFO)
 
     d = DataIterator(P_TRAIN, P_TEST, P_LABELS, batch_size=BATCH_SIZE)
     stae = SpatialTemporalAutoencoder(alpha=ALPHA, batch_size=BATCH_SIZE, lambd=LAMBDA)

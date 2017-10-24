@@ -1,9 +1,10 @@
+import os
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
-def plot_loss(losses, valid_losses):
+def plot_loss(losses, valid_losses, path):
     """
     plot training loss vs. iteration number
     """
@@ -14,10 +15,10 @@ def plot_loss(losses, valid_losses):
     plt.xlabel("Iteration")
     plt.ylabel("Total loss")
     plt.legend(loc='upper right')
-    plt.savefig("../results/Loss.png")
+    plt.savefig(os.path.join(path, "Loss.png"))
 
 
-def plot_auc(aucs):
+def plot_auc(aucs, path):
     """
     plot area under the curve vs. (iteration number / auc_every)
     """
@@ -25,10 +26,10 @@ def plot_auc(aucs):
     plt.plot(range(1, len(aucs) + 1), aucs)
     plt.xlabel("Training progress (# iter / constant)")
     plt.ylabel("Area under the roc curve")
-    plt.savefig("../results/AUC.png")
+    plt.savefig(os.path.join(path, "AUC.png"))
 
 
-def plot_regularity(regularity_scores, labels):
+def plot_regularity(regularity_scores, labels, path):
     """
     plot regularity score vs. frame number and shade anomalous background using ground truth labels
     """
@@ -39,4 +40,4 @@ def plot_regularity(regularity_scores, labels):
     for i in xrange(1, labels.shape[0] + 1):
         if labels[i - 1] == 1:
             plt.axvspan(i, i + 1, facecolor='salmon', alpha=0.5)
-    plt.savefig("../results/Regularity.png")
+    plt.savefig(os.path.join(path, "Regularity.png"))
