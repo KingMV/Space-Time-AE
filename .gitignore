@@ -5,6 +5,7 @@ data/
 models/
 .DS_Store
 .idea/
+results/STAE.log
 results/archive
 results/*.npy
 
@@ -111,3 +112,5 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+STAE.log

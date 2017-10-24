@@ -8,3 +8,4 @@ def compute_eer(far, frr):
             min_dist = dist
             eer = (item_far + item_frr) / 2
     return eer
+
