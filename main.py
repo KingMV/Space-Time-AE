@@ -1,12 +1,8 @@
 from __future__ import print_function, division
-from spatial_temporal_autoencoder import SpatialTemporalAutoencoder
-from data_iterator import DataIterator
+from src.spatial_temporal_autoencoder import SpatialTemporalAutoencoder
+from src.data_iterator import DataIterator
 import ConfigParser
-import numpy as np
-from sklearn.metrics import roc_auc_score, roc_curve
 import logging
-from plots import plot_loss, plot_auc, plot_regularity
-from utils import compute_eer
 import os
 import time
 import datetime
