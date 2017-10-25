@@ -158,4 +158,4 @@ class SpatialTemporalAutoencoder(object):
 
     def batch_train(self, xbatch, ybatch=None):
         self.step(xbatch, is_training=True)
-        return self.get_loss(tr_batch, is_training=False)
+        return self.get_loss(xbatch, is_training=False)
