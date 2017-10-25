@@ -26,10 +26,9 @@ def train(data, model, num_iteration, result_path, print_every=50):
             logging.info("validation loss at iteration {0:d}: {1:g}".format(i, valid_loss))
             aucs.append(auc)
             eers.append(eer)
+            valid_losses.append(valid_loss)
             if auc > best_auc:
-                best_reg_scores = reg
-                best_auc = auc
-                best_eer = eer
+                best_reg_scores, best_auc, best_eer = reg, auc, eer
                 model.save_model()
     plot_loss(losses=losses, valid_losses=valid_losses, path=result_path)
     plot_auc(aucs=aucs, path=result_path)
