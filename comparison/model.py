@@ -16,7 +16,7 @@ class STAE(object):
     """
     This class tries to rebuild the model in the paper
     """
-    def __init__(self, data_shape, learning_rate, optimizer='sgd', loss='mean_squared_error', epsilon=1e-6):
+    def __init__(self, data_shape, learning_rate, optimizer='sgd', loss='mean_squared_error', epsilon=1e-8):
         self.data_shape = data_shape
         self.learning_rate = learning_rate
         self.optimizer = optimizer
