@@ -25,9 +25,10 @@ if __name__ == "__main__":
     logging.basicConfig(filename=os.path.join("results", "STAE.log"), level=logging.INFO)
 
     # manually modify the batch_size
-    batch_size=40
+    batch_size=50
     data = DataIterator(train_path, test_path, label_path, batch_size=batch_size)
     data_shape = (t_volume, 224, 224, 1)
+    logging.info('The learning rate is {} and batch_size is {}'.format(learning_rate, batch_size))
     stae = STAE(data_shape=data_shape, learning_rate=learning_rate, optimizer='adam')
 
     train(data, stae, num_iteration=num_iteration, result_path="results/")
