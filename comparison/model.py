@@ -35,13 +35,13 @@ class STAE(object):
                                   input_shape=self.data_shape))
         model.add(TimeDistributed(BatchNormalization()))
         model.add(TimeDistributed(Activation('relu')))
-        model.add(Dropout(dropout))
+        #model.add(Dropout(dropout))
 
         # convolutional layer 2
         model.add(TimeDistributed(Conv2D(64, kernel_size=(5,5), padding='same', strides=(2,2), name='conv2')))
         model.add(TimeDistributed(BatchNormalization()))
         model.add(TimeDistributed(Activation('relu')))
-        model.add(Dropout(dropout))
+        #model.add(Dropout(dropout))
 
         # ConvLSTM
         model.add(ConvLSTM2D(64, kernel_size=(3,3), padding='same', return_sequences=True, name='convlstm1'))
