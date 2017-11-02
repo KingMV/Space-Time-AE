@@ -99,12 +99,12 @@ class STAE(object):
     @staticmethod
     def load_model():
         # load json and create model
-        json_file = open('model.json', 'r')
+        json_file = open('models/keras-model.json', 'r')
         loaded_model_json = json_file.read()
         json_file.close()
         loaded_model = model_from_json(loaded_model_json)
         # load weights into new model
-        loaded_model.load_weights("model.h5")
+        loaded_model.load_weights("models/keras-model.h5")
         logging.info("Load model from disk")
         return loaded_model
 

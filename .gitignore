@@ -115,5 +115,4 @@ venv.bak/
 .mypy_cache/
 
 STAE.log
-model.json
-model.h5
+models/
