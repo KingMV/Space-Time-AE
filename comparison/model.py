@@ -52,7 +52,7 @@ class STAE(object):
                                                   padding='same', strides=(2,2), name='deconv1')))
         #model.add(TimeDistributed(BatchNormalization()))
         model.add(TimeDistributed(Activation('relu')))
-        model.add(Dropout(dropout))
+        #model.add(Dropout(dropout))
 
         # deconvolutional layer 2
         model.add(TimeDistributed(Conv2DTranspose(1, kernel_size=(11, 11),
