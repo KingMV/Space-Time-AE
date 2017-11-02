@@ -10,6 +10,7 @@ from keras.layers.core import Dropout
 import logging
 import numpy as np
 from comparison.util import cal_per_frame_error
+from keras.models import model_from_json
 
 
 class STAE(object):
@@ -32,13 +33,13 @@ class STAE(object):
         #model.add(TimeDistributed(BatchNormalization(), input_shape=self.data_shape))
         model.add(TimeDistributed(Conv2D(128, kernel_size=(11, 11), padding='same', strides=(4,4), name='conv1'),
                                   input_shape=self.data_shape))
-        #model.add(TimeDistributed(BatchNormalization()))
+        model.add(TimeDistributed(BatchNormalization()))
         model.add(TimeDistributed(Activation('relu')))
         model.add(Dropout(dropout))
 
         # convolutional layer 2
         model.add(TimeDistributed(Conv2D(64, kernel_size=(5,5), padding='same', strides=(2,2), name='conv2')))
-        #model.add(TimeDistributed(BatchNormalization()))
+        model.add(TimeDistributed(BatchNormalization()))
         model.add(TimeDistributed(Activation('relu')))
         model.add(Dropout(dropout))
 
@@ -50,7 +51,7 @@ class STAE(object):
         # deconvolutional layer 1
         model.add(TimeDistributed(Conv2DTranspose(128, kernel_size=(5,5),
                                                   padding='same', strides=(2,2), name='deconv1')))
-        #model.add(TimeDistributed(BatchNormalization()))
+        model.add(TimeDistributed(BatchNormalization()))
         model.add(TimeDistributed(Activation('relu')))
         #model.add(Dropout(dropout))
 
@@ -81,8 +82,28 @@ class STAE(object):
         return self.model.predict_on_batch(x)
 
     def save_model(self):
-        pass
+        # serialize model to JSON
+        model_json = self.model.to_json()
+        with open("model.json", "w") as json_file:
+            json_file.write(model_json)
+        # serialize weights to HDF5
+        self.model.save_weights("model.h5")
+        logging.info("Saved model to disk")
+
+        return
 
     def get_recon_errors(self, test_batch, is_training=False):
         test_batch_prediction = self.batch_predict(test_batch)
         return cal_per_frame_error(test_batch, test_batch_prediction)
+
+    def load_model(self):
+        # load json and create model
+        json_file = open('model.json', 'r')
+        loaded_model_json = json_file.read()
+        json_file.close()
+        loaded_model = model_from_json(loaded_model_json)
+        # load weights into new model
+        loaded_model.load_weights("model.h5")
+        logging.info("Load model from disk")
+        return loaded_model
+

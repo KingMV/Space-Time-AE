@@ -8,6 +8,7 @@ models/
 results/STAE.log
 results/archive
 results/*.npy
+results/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -114,3 +115,4 @@ venv.bak/
 .mypy_cache/
 
 STAE.log
+model*
