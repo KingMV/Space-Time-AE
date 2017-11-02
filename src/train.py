@@ -7,7 +7,7 @@ from src.utils import compute_eer
 from sklearn.metrics import roc_auc_score, roc_curve
 
 
-def train(data, model, num_iteration, result_path, print_every=50):
+def train(data, model, num_iteration, result_path, print_every=100):
     logging.info("Start training the network: {}".format(time.asctime(time.localtime(time.time()))))
     best_auc = -float('inf')
     best_reg_scores = None
