@@ -96,7 +96,8 @@ class STAE(object):
         test_batch_prediction = self.batch_predict(test_batch)
         return cal_per_frame_error(test_batch, test_batch_prediction)
 
-    def load_model(self):
+    @staticmethod
+    def load_model():
         # load json and create model
         json_file = open('model.json', 'r')
         loaded_model_json = json_file.read()
