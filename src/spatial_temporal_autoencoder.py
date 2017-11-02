@@ -151,10 +151,10 @@ class SpatialTemporalAutoencoder(object):
                                                 session=self.sess)
 
     def save_model(self):
-        self.saver.save(self.sess, "../models/model.ckpt")
+        self.saver.save(self.sess, "models/model.ckpt")
 
     def restore_model(self):
-        self.saver.restore(self.sess, "../models/model.ckpt")
+        self.saver.restore(self.sess, "models/model.ckpt")
 
     def batch_train(self, xbatch, ybatch=None):
         self.step(xbatch, is_training=True)
