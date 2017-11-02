@@ -84,10 +84,10 @@ class STAE(object):
     def save_model(self):
         # serialize model to JSON
         model_json = self.model.to_json()
-        with open("model.json", "w") as json_file:
+        with open("models/keras-model.json", "w") as json_file:
             json_file.write(model_json)
         # serialize weights to HDF5
-        self.model.save_weights("model.h5")
+        self.model.save_weights("models/keras-model.h5")
         logging.info("Saved model to disk")
 
         return
