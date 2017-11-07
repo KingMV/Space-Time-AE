@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -32,12 +33,19 @@ def plot_auc(aucs, path):
 def plot_regularity(regularity_scores, labels, path):
     """
     plot regularity score vs. frame number and shade anomalous background using ground truth labels
+    for each video in the test set
     """
-    plt.figure()
-    plt.plot(range(1, regularity_scores.shape[0] + 1), regularity_scores, linewidth=0.5)
-    plt.xlabel("Frame number")
-    plt.ylabel("Regularity score")
-    for i in xrange(1, labels.shape[0] + 1):
-        if labels[i - 1] == 1:
-            plt.axvspan(i, i + 1, facecolor='salmon', alpha=0.5)
-    plt.savefig(os.path.join(path, "Regularity.png"))
+    num_test_vids = 36
+    frames_per_video = 200
+    for vid_id in range(num_test_vids):
+        plt.figure()
+        start = vid_id * frames_per_video
+        end = start + 200
+        y_ax = regularity_scores[np.arange(start, end)]
+        plt.plot(np.arange(1, frames_per_video + 1), y_ax, linewidth=0.5)
+        plt.xlabel("Frame number")
+        plt.ylabel("Regularity score")
+        for i in xrange(start, end):
+            if labels[i] == 1:
+                plt.axvspan(i - start, i + 1 - start, facecolor='salmon', alpha=0.5)
+        plt.savefig(os.path.join(path, "Regularity_vid{0:d}.png".format(vid_id + 1)))

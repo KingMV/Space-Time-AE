@@ -22,14 +22,12 @@ def train(data, model, num_iteration, result_path, print_every=100):
                          .format(print_every, np.mean(losses[-print_every:])))
 
             reg, auc, eer, valid_loss = test(data, model)
-            logging.info("area under the roc curve at iteration {0:d}: {1:g}".format(i, auc))
+            logging.info("frame level area under the roc curve at iteration {0:d}: {1:g}".format(i, auc))
             logging.info("validation loss at iteration {0:d}: {1:g}".format(i, valid_loss))
             aucs.append(auc)
             eers.append(eer)
             valid_losses.append(valid_loss)
-            if auc > best_auc:
-                best_reg_scores, best_auc, best_eer = reg, auc, eer
-                model.save_model()
+    model.save_model()
     plot_loss(losses=losses, valid_losses=valid_losses, path=result_path)
     plot_auc(aucs=aucs, path=result_path)
     plot_regularity(regularity_scores=best_reg_scores, labels=data.get_test_labels(), path=result_path)
@@ -69,5 +67,5 @@ def per_video_abnorm_scores(per_frame_error, num_frames_per_video=200):
     for i in xrange(num_videos):
         index_range = np.arange(i * num_frames_per_video, (i + 1) * num_frames_per_video)
         abnorm_scores[index_range] = (per_frame_error[index_range] - per_frame_error[index_range].min()) / \
-                                    (per_frame_error[index_range].max() - per_frame_error[index_range].min())
+                                     (per_frame_error[index_range].max() - per_frame_error[index_range].min())
     return abnorm_scores
