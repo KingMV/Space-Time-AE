@@ -156,6 +156,9 @@ class SpatialTemporalAutoencoder(object):
     def restore_model(self):
         self.saver.restore(self.sess, "models/model.ckpt")
 
+    def batch_predict(self, x):
+        return self.y.eval(feed_dict={self.x_: x, self.phase: False}, session=self.sess)
+
     def batch_train(self, xbatch, ybatch=None):
         self.step(xbatch, is_training=True)
         return self.get_loss(xbatch, is_training=False)

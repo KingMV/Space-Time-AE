@@ -96,8 +96,7 @@ class STAE(object):
         test_batch_prediction = self.batch_predict(test_batch)
         return cal_per_frame_error(test_batch, test_batch_prediction)
 
-    @staticmethod
-    def load_model():
+    def load_model(self):
         # load json and create model
         json_file = open('models/keras-model.json', 'r')
         loaded_model_json = json_file.read()
@@ -106,5 +105,6 @@ class STAE(object):
         # load weights into new model
         loaded_model.load_weights("models/keras-model.h5")
         logging.info("Load model from disk")
-        return loaded_model
+        self.model = loaded_model
+        return
 
