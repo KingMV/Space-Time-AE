@@ -30,11 +30,11 @@ def train(data, model, num_iteration, result_path, print_every=100):
     model.save_model()
     plot_loss(losses=losses, valid_losses=valid_losses, path=result_path)
     plot_auc(aucs=aucs, path=result_path)
-    plot_regularity(regularity_scores=best_reg_scores, labels=data.get_test_labels(), path=result_path)
+    plot_regularity(regularity_scores=reg, labels=data.get_test_labels(), path=result_path)
     np.save(os.path.join(result_path, "aucs.npy"), aucs)
     np.save(os.path.join(result_path, "losses.npy"), losses)
-    np.save(os.path.join(result_path, "regularity_scores.npy"), best_reg_scores)
-    return best_auc, best_eer
+    np.save(os.path.join(result_path, "regularity_scores.npy"), reg)
+    return auc, eer
 
 
 def test(data, model):
