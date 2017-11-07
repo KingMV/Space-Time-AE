@@ -9,9 +9,6 @@ from sklearn.metrics import roc_auc_score, roc_curve
 
 def train(data, model, num_iteration, result_path, print_every=100):
     logging.info("Start training the network: {}".format(time.asctime(time.localtime(time.time()))))
-    best_auc = -float('inf')
-    best_reg_scores = None
-    best_eer = float('inf')
     aucs, eers, losses, valid_losses = [], [], [], []
     for i in xrange(num_iteration + 1):
         tr_batch = data.get_train_batch()
