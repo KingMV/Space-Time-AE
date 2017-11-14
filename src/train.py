@@ -17,7 +17,6 @@ def train(data, model, num_iteration, result_path, print_every=100):
         if i % print_every == 0:
             logging.info("average training reconstruction loss over {0:d} iterations: {1:g}"
                          .format(print_every, np.mean(losses[-print_every:])))
-
             reg, auc, eer, valid_loss = test(data, model)
             logging.info("frame level area under the roc curve at iteration {0:d}: {1:g}".format(i, auc))
             logging.info("validation loss at iteration {0:d}: {1:g}".format(i, valid_loss))
@@ -31,7 +30,7 @@ def train(data, model, num_iteration, result_path, print_every=100):
     np.save(os.path.join(result_path, "aucs.npy"), aucs)
     np.save(os.path.join(result_path, "losses.npy"), losses)
     np.save(os.path.join(result_path, "regularity_scores.npy"), reg)
-    return auc, eer
+    return
 
 
 def test(data, model):
@@ -44,7 +43,6 @@ def test(data, model):
             for j in xrange(frame_indices.shape[1]):
                 if frame_indices[i, j] != -1:
                     per_frame_error[frame_indices[i, j]].append(frame_error[i, j])
-
     per_frame_average_error = np.asarray(map(lambda x: np.mean(x), per_frame_error))
     # min-max normalize to linearly scale into [0, 1]
     abnorm_scores = per_video_abnorm_scores(per_frame_average_error)
